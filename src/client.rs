@@ -3,8 +3,8 @@ use std::net::TcpStream;
 use std::thread;
 // use std::time::Duration;
 
-const LOCAL: &str = "127.0.0.1:6000";
-const MSG_SIZE: usize = 32;
+const LOCAL: &str = "127.0.0.1:6000"; // Endereço do servidor TCP (IP e porta)
+const MSG_SIZE: usize = 32; // Tamanho fixo das mensagens em bytes
 
 fn main() {
     let mut client = TcpStream::connect(LOCAL).expect("Stream failed to connect");
@@ -12,7 +12,7 @@ fn main() {
 
     let mut client_clone = client.try_clone().expect("Falha ao clonar o cliente");
 
-    // Thread para receber mensagens
+    // Inicia uma nova thread para lidar com mensagens recebidas
     thread::spawn(move || {
         let mut buff = vec![0; MSG_SIZE];
         loop {
@@ -31,16 +31,22 @@ fn main() {
         }
     });
 
-    // Loop principal para enviar mensagens
+    // Loop principal para envio de mensagens
     loop {
+        // Buffer para armazenar entrada do usuário
         let mut input = String::new();
+
+        // Lê uma linha do terminal (stdin)
         io::stdin()
             .read_line(&mut input)
             .expect("Falha ao ler a entrada");
+
+        // Remove espaços em branco do início/fim e converte para String
         let msg = input.trim().to_string();
 
+        // Verifica comandos de saída
         if msg == ":quit" || msg == ":q" {
-            break;
+            break; // Encerra o loop principal
         }
 
         let mut buff = msg.clone().into_bytes();

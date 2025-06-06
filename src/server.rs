@@ -10,6 +10,13 @@ const MSG_SIZE: usize = 32; // tamanho do mensagem
 fn sleep() {
     thread::sleep(Duration::from_millis(100)); // espera 100ms
 }
+
+/// Servidor de chat TCP básico
+///
+/// Funcionalidades:
+/// 1. Aceita conexões de múltiplos clientes
+/// 2. Recebe mensagens de clientes e retransmite para todos conectados
+/// 3. Gerencia desconexões de clientes
 fn main() {
     let server = TcpListener::bind(LOCAL).expect("Listener failed to bind."); // cria um servidor TCP
     server
@@ -18,6 +25,8 @@ fn main() {
 
     let mut clients = vec![]; // cria um vetor para armazenar os clientes
     let (tx, rx) = mpsc::channel::<String>(); // cria um canal de comunicação entre threads
+
+    // Loop principal do servidor
     loop {
         if let Ok((mut socket, addr)) = server.accept() {
             // aceita uma conexão de cliente
@@ -50,9 +59,12 @@ fn main() {
                         }
                     }
                     sleep(); // espera 100ms
+                    // Pausa para evitar uso excessivo da CPU
                 }
             });
         }
+
+        // Verifica se há mensagens no canal para retransmitir
         if let Ok(msg) = rx.try_recv() {
             clients = clients
                 .into_iter()
@@ -65,9 +77,12 @@ fn main() {
                 .collect::<Vec<_>>(); // converte o vetor de clientes em um vetor de clientes
         }
         sleep(); // espera 100ms
+
+        // Pausa o loop principal
     }
 }
 
+// Módulo de testes unitários
 #[cfg(test)]
 mod tests {
     use super::*; // importa todas as funções e variáveis do módulo
